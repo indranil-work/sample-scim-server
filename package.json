@@ -21,11 +21,12 @@
     "express": "^4.16.2",
     "fs": "0.0.1-security",
     "moment": "^2.20.1",
-    "sqlite3": "^3.1.13",
+    "sqlite3": "^4.1.1",
     "url": "^0.11.0",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "ldapjs-client": "*"
   },
   "engines": {
-    "node": "8.9.4"
+    "node": "16.*"
   }
 }

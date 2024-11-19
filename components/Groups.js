@@ -1,6 +1,6 @@
 let url = require('url');
 let scimCore = require('../core/SCIMCore');
-let db = require('../core/Database');
+let db = require('../core/Ldap');
 let group = require('../models/Group');
 let out = require('../core/Logs');
 
@@ -12,8 +12,8 @@ class Groups {
         let reqUrl = urlParts.pathname;
 
         let query = urlParts.query;
-        let startIndex = query["startIndex"];
-        let count = query["count"];
+        let startIndex = query["startIndex"]|| 1;
+        let count = query["count"]|| 100;
         let filter = query["filter"];
 
         if (filter !== undefined) {
@@ -123,6 +123,33 @@ class Groups {
         });
     }
 
+    static deleteGroup(req, res) {
+        out.log("INFO", "Groups.deleteGroup", "Got request: " + req.url);
+
+        let reqUrl = req.url;
+
+        let groupId = req.params.groupId;
+
+        db.deleteGroup(groupId, reqUrl, function (result) {
+            if (result["status"] !== undefined) {
+                if (result["status"] === "400") {
+                    res.writeHead(400, {"Content-Type": "text/plain"});
+                } else if (result["status"] === "409") {
+                    res.writeHead(409, {"Content-Type": "text/plain"});
+                }
+
+                out.log("ERROR", "Groups.deleteGroup", "Encountered error " + result["status"] + ": " + result["detail"]);
+            } else {
+                res.writeHead(200, {"Content-Type": "text/json"});
+            }
+
+            let jsonResult = JSON.stringify(result);
+            out.logToFile(jsonResult);
+
+            res.end(jsonResult);
+        });
+    }
+
     static patchGroup(req, res) {
         out.log("INFO", "Groups.patchGroup", "Got request: " + req.url);
 
@@ -139,13 +166,62 @@ class Groups {
 
             out.logToFile(requestBody);
 
+            console.log(requestBody);
+
             let operation = jsonReqBody["Operations"][0]["op"];
-            let value = jsonReqBody["Operations"][0]["value"];
-            let attribute = Object.keys(value)[0];
-            let attributeValue = value[attribute];
+            let path = jsonReqBody["Operations"][0]["path"];
+            let value = null;
+            let attribute = null;
+            let attributeValue = null;
 
             if (operation === "replace") {
+                value = jsonReqBody["Operations"][0]["value"];
+                attribute = Object.keys(value)[0];
+                attributeValue = value[attribute];
+
                 db.patchGroup(attribute, attributeValue, groupId, reqUrl, function (result) {
+                    if (result["status"] !== undefined) {
+                        if (result["status"] === "400") {
+                            res.writeHead(400, {"Content-Type": "text/plain"});
+                        } else if (result["status"] === "409") {
+                            res.writeHead(409, {"Content-Type": "text/plain"});
+                        }
+
+                        out.log("ERROR", "Groups.patchGroup", "Encountered error " + result["status"] + ": " + result["detail"]);
+                    } else {
+                        res.writeHead(200, {"Content-Type": "text/json"});
+                    }
+
+                    let jsonResult = JSON.stringify(result);
+                    out.logToFile(jsonResult);
+
+                    res.end(jsonResult);
+                });
+            } else if ((operation === "add") && (path === "members")) {
+                    value = jsonReqBody["Operations"][0]["value"];
+                    
+                    db.patchGroup(path, value, groupId, reqUrl, function (result) {
+                        if (result["status"] !== undefined) {
+                            if (result["status"] === "400") {
+                                res.writeHead(400, {"Content-Type": "text/plain"});
+                            } else if (result["status"] === "409") {
+                                res.writeHead(409, {"Content-Type": "text/plain"});
+                            }
+    
+                            out.log("ERROR", "Groups.patchGroup", "Encountered error " + result["status"] + ": " + result["detail"]);
+                        } else {
+                            res.writeHead(200, {"Content-Type": "text/json"});
+                        }
+    
+                        let jsonResult = JSON.stringify(result);
+                        out.logToFile(jsonResult);
+    
+                        res.end(jsonResult);
+                    });
+            } else if (operation === "remove") {
+                let match = path.match(/members\[value\ eq\ \"(.*)\"\]/);
+                let memberId = match[1];
+                db.patchGroup("remove_member", memberId, groupId, reqUrl, function (result) {
                     if (result["status"] !== undefined) {
                         if (result["status"] === "400") {
                             res.writeHead(400, {"Content-Type": "text/plain"});

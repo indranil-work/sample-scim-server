@@ -407,6 +407,20 @@ class Database {
         });
     }
 
+    static async deleteUser(userId, reqUrl, callback) {
+        let query = "DELETE FROM Users WHERE id = '" + String(userId) + "'";
+        let self = this;
+
+        await db.run(query, function (err) {
+            if (err !== null) {
+                out.error("Database.deleteUser::DELETE", err);
+
+                callback(scimCore.createSCIMError(err, "400"));
+            }
+            
+        });
+    }
+
     static async patchGroup(attributeName, attributeValue, groupId, reqUrl, callback) {
         let query = "UPDATE Groups SET " + attributeName + " = '" + attributeValue + "' WHERE id = '" + String(groupId) + "'";
         let self = this;

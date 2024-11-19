@@ -16,7 +16,7 @@
 let express = require('express');
 let app = express();
 let bodyParser = require('body-parser');
-let db = require('./core/Database');
+let db = require('./core/Ldap');
 let out = require('./core/Logs');
 let cUsers = require('./components/Users');
 let cGroups = require('./components/Groups');
@@ -58,6 +58,12 @@ app.patch('/scim/v2/Users/:userId', cUsers.patchUser);
 app.put('/scim/v2/Users/:userId', cUsers.updateUser);
 
 /**
+ * DELETE {{baseUrl}}/scim/v2/Users/{{userId}}
+ * Deletes a user's profile
+ */
+app.delete('/scim/v2/Users/:userId', cUsers.deleteUser);
+
+/**
  * GET {{baseUrl}}/scim/v2/Groups
  * List users with or without a filter
  */
@@ -88,6 +94,12 @@ app.patch('/scim/v2/Groups/:groupId', cGroups.patchGroup);
 app.put('/scim/v2/Groups/:groupId', cGroups.updateGroup);
 
 /**
+ * DELETE {{baseUrl}}/scim/v2/Groups/{{groupId}}
+ * Deletes a group
+ */
+app.delete('/scim/v2/Groups/:groupId', cGroups.deleteGroup);
+
+/**
  * GET {{baseUrl}}/scim/v2
  * Default SCIM endpoint
  */
@@ -95,8 +107,8 @@ app.get('/scim/v2', function (req, res) {
     res.send('SCIM');
 });
 
-let server = app.listen(port, function () {
+let server = app.listen(port, async function () {
     out.log("INFO", "ServerStartup", "Listening on port " + port);
 
-    db.dbInit();
+    await db.dbInit();
 });

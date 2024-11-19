@@ -1,6 +1,6 @@
 let url = require('url');
 let scimCore = require('../core/SCIMCore');
-let db = require('../core/Database');
+let db = require('../core/Ldap');
 let user = require('../models/User');
 let out = require('../core/Logs');
 
@@ -12,8 +12,8 @@ class Users {
         let reqUrl = urlParts.pathname;
 
         let query = urlParts.query;
-        let startIndex = query["startIndex"];
-        let count = query["count"];
+        let startIndex = query["startIndex"] || 1;
+        let count = query["count"] || 100;
         let filter = query["filter"];
 
         if (filter !== undefined) {
@@ -174,6 +174,33 @@ class Users {
 
                 res.end(jsonResult);
             }
+        });
+    }
+
+    static deleteUser(req, res) {
+        out.log("INFO", "Users.deleteUser", "Got request: " + req.url);
+
+        let reqUrl = req.url;
+
+        let userId = req.params.userId;
+
+        db.deleteUser(userId, reqUrl, function (result) {
+            if (result["status"] !== undefined) {
+                if (result["status"] === "400") {
+                    res.writeHead(400, {"Content-Type": "text/plain"});
+                } else if (result["status"] === "409") {
+                    res.writeHead(409, {"Content-Type": "text/plain"});
+                }
+
+                out.log("ERROR", "Users.deleteUser", "Encountered error " + result["status"] + ": " + result["detail"]);
+            } else {
+                res.writeHead(200, {"Content-Type": "text/json"});
+            }
+
+            let jsonResult = JSON.stringify(result);
+            out.logToFile(jsonResult);
+
+            res.end(jsonResult);
         });
     }
 

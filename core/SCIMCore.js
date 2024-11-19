@@ -29,6 +29,7 @@ class SCIMCore {
         let location = "";
 
         for (let i = (startIndex - 1); i < count; i++) {
+            console.log("Here");
             location = reqUrl + "/" + rows[i]["id"];
 
             resources.push(this.parseSCIMUser(rows[i], location));
@@ -71,18 +72,17 @@ class SCIMCore {
     }
 
     static parseSCIMUser(row, reqUrl) {
-        return this.createSCIMUser(row["id"], row["active"], row["userName"], row["givenName"],
-                    row["middleName"], row["familyName"], row["email"], row["groups"], reqUrl);
+        return this.createSCIMUser(row["id"], row["id"], row["active"], row["givenName"], 
+            row["familyName"], row["email"], row["groups"], reqUrl);
     }
 
-    static createSCIMUser(userId, active, userName, givenName, middleName, familyName, email, groups, reqUrl) {
+    static createSCIMUser(userId, active, userName, givenName, familyName, email, groups, reqUrl) {
         let scimUser = {
             "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
             "id": null,
             "userName": null,
             "name": {
                 "givenName": null,
-                "middleName": null,
                 "familyName": null
             },
             "emails":
@@ -91,7 +91,7 @@ class SCIMCore {
                     "value": null,
                     "type": "work"
                 }],
-            "active": false,
+            "active": active,
             "groups": [],
             "meta": {
                 "resourceType": "User",
@@ -101,13 +101,14 @@ class SCIMCore {
 
         scimUser["meta"]["location"] = reqUrl;
         scimUser["id"] = userId;
-        scimUser["active"] = active;
+        scimUser["active"] = "true";
         scimUser["userName"] = userName;
         scimUser["name"]["givenName"] = givenName;
-        scimUser["name"]["middleName"] = middleName;
         scimUser["name"]["familyName"] = familyName;
         scimUser["emails"][0]["value"] = email;
         scimUser["groups"] = groups;
+
+        console.log(scimUser);
 
         return scimUser;
     }

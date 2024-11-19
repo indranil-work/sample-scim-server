@@ -19,7 +19,6 @@ class User  {
             "active": false,
             "userName": "",
             "givenName": "",
-            "middleName": "",
             "familyName": "",
             "email": "",
             "groups": []
