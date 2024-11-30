@@ -14,7 +14,7 @@
  */
 
 let LdapClient = require('ldapjs-client');
-let client = new LdapClient({ url: 'ldap://18.221.140.71:389' });
+let client = new LdapClient({ url: 'ldap://18.217.158.233:389' });
 let uuid = require('uuid');
 let scimCore = require('./SCIMCore');
 let out = require('./Logs');
