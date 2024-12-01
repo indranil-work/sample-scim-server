@@ -33,9 +33,8 @@ var scimConfig = require('./scim2.json');
  * GET {{baseUrl}}/scim/v2/Users
  * List users with or without a filter
  */
-app.get('/scim/v2/ServiceProviderConfigs', cUsers.listUsers);
 
-app.get("/scim/v2/ServiceProviderConfigs", (request, response) => {
+app.get("/scim/v2/ServiceProviderConfig", (request, response) => {
     response.send(scimConfig.ServiceProviderConfigs);
  });
 
