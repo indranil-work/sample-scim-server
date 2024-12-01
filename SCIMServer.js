@@ -27,6 +27,18 @@ app.use(bodyParser.json());
 
 let port = process.env.PORT || 8081; // Support for Heroku
 
+var scimConfig = require('./scim2.json');
+
+/**
+ * GET {{baseUrl}}/scim/v2/Users
+ * List users with or without a filter
+ */
+app.get('/scim/v2/ServiceProviderConfigs', cUsers.listUsers);
+
+app.get("/scim/v2/ServiceProviderConfigs", (request, response) => {
+    response.send(scimConfig.ServiceProviderConfigs);
+ });
+
 /**
  * GET {{baseUrl}}/scim/v2/Users
  * List users with or without a filter
