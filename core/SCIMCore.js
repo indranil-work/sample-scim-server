@@ -72,7 +72,7 @@ class SCIMCore {
     }
 
     static parseSCIMUser(row, reqUrl) {
-        return this.createSCIMUser(row["id"], row["id"], row["active"], row["givenName"], 
+        return this.createSCIMUser(row["id"], row["active"], row["userName"], row["givenName"], 
             row["familyName"], row["email"], row["groups"], reqUrl);
     }
 
